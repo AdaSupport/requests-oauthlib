@@ -154,7 +154,8 @@ class OAuth2Session(requests.Session):
 
     def fetch_token(self, token_url, code=None, authorization_response=None,
             body='', auth=None, username=None, password=None, method='POST',
-            timeout=None, headers=None, verify=True, proxies=None, **kwargs):
+            timeout=None, headers=None, verify=True, proxies=None,
+            cert=None, **kwargs):
         """Generic method for fetching an access token from the token endpoint.
 
         If you are using the MobileApplicationClient you will want to use
@@ -176,6 +177,7 @@ class OAuth2Session(requests.Session):
         :param headers: Dict to default request headers with.
         :param timeout: Timeout of the request in seconds.
         :param verify: Verify SSL certificate.
+        :param cert: Client certificate
         :param kwargs: Extra parameters to include in the token request.
         :return: A token dict
         """
