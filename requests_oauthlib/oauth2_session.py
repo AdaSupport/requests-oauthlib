@@ -36,7 +36,7 @@ class OAuth2Session(requests.Session):
 
     def __init__(self, client_id=None, client=None, auto_refresh_url=None,
             auto_refresh_kwargs=None, scope=None, redirect_uri=None, token=None,
-            state=None, token_updater=None, **kwargs):
+            state=None, token_updater=None, cert=None, **kwargs):
         """Construct a new OAuth 2 client session.
 
         :param client_id: Client id obtained during registration
@@ -61,6 +61,7 @@ class OAuth2Session(requests.Session):
                         set a TokenUpdated warning will be raised when a token
                         has been refreshed. This warning will carry the token
                         in its token argument.
+        :cert: Client certificate for authenting requests
         :param kwargs: Arguments to pass to the Session constructor.
         """
         super(OAuth2Session, self).__init__(**kwargs)
@@ -73,6 +74,7 @@ class OAuth2Session(requests.Session):
         self.auto_refresh_url = auto_refresh_url
         self.auto_refresh_kwargs = auto_refresh_kwargs or {}
         self.token_updater = token_updater
+        self.cert = cert
 
         # Allow customizations for non compliant providers through various
         # hooks to adjust requests and responses.
@@ -154,8 +156,7 @@ class OAuth2Session(requests.Session):
 
     def fetch_token(self, token_url, code=None, authorization_response=None,
             body='', auth=None, username=None, password=None, method='POST',
-            timeout=None, headers=None, verify=True, proxies=None,
-            cert=None, **kwargs):
+            timeout=None, headers=None, verify=True, proxies=None, **kwargs):
         """Generic method for fetching an access token from the token endpoint.
 
         If you are using the MobileApplicationClient you will want to use
@@ -177,7 +178,6 @@ class OAuth2Session(requests.Session):
         :param headers: Dict to default request headers with.
         :param timeout: Timeout of the request in seconds.
         :param verify: Verify SSL certificate.
-        :param cert: Client certificate
         :param kwargs: Extra parameters to include in the token request.
         :return: A token dict
         """
@@ -220,13 +220,13 @@ class OAuth2Session(requests.Session):
         if method.upper() == 'POST':
             r = self.post(token_url, data=dict(urldecode(body)),
                 timeout=timeout, headers=headers, auth=auth,
-                verify=verify, proxies=proxies)
+                verify=verify, proxies=proxies, cert=self.cert)
             log.debug('Prepared fetch token request body %s', body)
         elif method.upper() == 'GET':
             # if method is not 'POST', switch body to querystring and GET
             r = self.get(token_url, params=dict(urldecode(body)),
                 timeout=timeout, headers=headers, auth=auth,
-                verify=verify, proxies=proxies)
+                verify=verify, proxies=proxies, cert=self.cert)
             log.debug('Prepared fetch token request querystring %s', body)
         else:
             raise ValueError('The method kwarg must be POST or GET.')
